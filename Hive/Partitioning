@@ -1,0 +1,18 @@
+Partitioning in Hive is very useful to prune data during query to reduce query times.
+
+Partitions are created when data is inserted into table. Depending on how you load data you would need partitions. 
+Usually when loading files (big files) into Hive tables static partitions are preferred. 
+That saves your time in loading data compared to dynamic partition. 
+You "statically" add a partition in table and move the file into the partition of the table. 
+Since the files are big they are usually generated in HDFS. 
+You can get the partition column value form the filename, day of date etc without reading the whole big file.
+
+Incase of dynamic partition whole big file i.e. every row of the data is read and data is partitioned 
+through a MR job into the destination tables depending on certain field in file. 
+So usually dynamic partition are useful when you are doing sort of a ETL flow in your data pipeline. e.g.
+you load a huge file through a move command into a Table X. then you run a inert query into a Table Y and 
+partition data based on field in table X say day , country. You may want to further run a ETL step to partition 
+the data in country partition in Table Y into a Table Z where data is partitioned based on cities for a particular country only. etc.
+
+Thus depending on your end table or requirements for data and in what form data is produced at source you may choose static 
+or dynamic partition.

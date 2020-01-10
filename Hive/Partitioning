@@ -16,3 +16,48 @@ the data in country partition in Table Y into a Table Z where data is partitione
 
 Thus depending on your end table or requirements for data and in what form data is produced at source you may choose static 
 or dynamic partition.
+
+
+in static partitioning we need to specify the partition column value in each and every LOAD statement.
+
+suppose we are having partition on column country for table t1(userid, name,occupation, country), so each time we need to provide country value
+
+hive>LOAD DATA INPATH '/hdfs path of the file' INTO TABLE t1 PARTITION(country="US")
+hive>LOAD DATA INPATH '/hdfs path of the file' INTO TABLE t1 PARTITION(country="UK")
+dynamic partition allow us not to specify partition column value each time. the approach we follows is as below:
+
+create a non-partitioned table t2 and insert data into it.
+now create a table t1 partitioned on intended column(say country).
+load data in t1 from t2 as below:
+
+hive> INSERT INTO TABLE t2 PARTITION(country) SELECT * from T1;
+make sure that partitioned column is always the last one in non partitioned table(as we are having country column in t2)
+
+
+
+We can alter the partition in static partition
+
+You can get the partition column value form the filename, day of date etc without reading the whole big file. If you want to use Static partition in hive you should set property
+
+set hive.mapred.mode = strict
+This property set by default in hive-site.xml Static partition is in Strict Mode You should use where clause to use limit in static partition You can perform Static partition on Hive Manage table or external table.
+
+Dynamic Partition in Hive
+
+single insert to partition table is known as dynamic partition
+
+Usually dynamic partition load the data from non partitioned table
+
+Dynamic Partition takes more time in loading data compared to static partition
+
+When you have large data stored in a table then Dynamic partition is suitable.
+
+If you want to partition number of column but you don’t know how many columns then also dynamic partition is suitable
+
+Dynamic partition there is no required where clause to use limit. we can’t perform alter on Dynamic partition
+
+You can perform dynamic partition on hive external table and managed table If you want to use Dynamic partition in hive then mode is in nonstrict mode Here is hive dynamic partition properties you should allow
+
+SET hive.exec.dynamic.partition = true;
+
+SET hive.exec.dynamic.partition.mode = nonstrict;

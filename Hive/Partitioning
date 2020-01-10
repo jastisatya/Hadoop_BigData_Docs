@@ -61,3 +61,45 @@ You can perform dynamic partition on hive external table and managed table If yo
 SET hive.exec.dynamic.partition = true;
 
 SET hive.exec.dynamic.partition.mode = nonstrict;
+
+
+
+For dynamic partitioning, you have to use INSERT ... SELECT query (Hive insert).
+
+Inserting data into Hive table having DP, is a two step process.
+
+Create staging table in staging database in hive and load data into that table from external source such as RDBMS, document database or local files using Hive load.
+Insert data into actual table into ODS (operational data store/final database) using Hive insert.
+Also, set following properties in Hive.
+
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+Following example works on cloudera VM.
+
+-- Extract orders data from mysql (Retail_DB.products) 
+select * from orders into outfile '/tmp/orders_data.psv' fieldsterminated by '|' lines terminated by 'n';
+
+-- Create Hive table with DP - order_month is DP.
+CREATE TABLE orders (order_id int, order_date string, order_customer_id int, order_status string ) PARTITIONED BY (order_month string) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'STORED AS TEXTFILE;
+
+--Create staging table in Hive.
+CREATE TABLE orders_stage (order_id int,order_date string, order_customer_id int, order_status string ) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' STORED AS TEXTFILE;
+
+--Load data into staging table (Hive)
+Load data into staging table  load data local inpath 
+/tmp/orders_data.psv' overwrite into table orders_stage;
+
+--Insert into Orders, which is final table (Hive). 
+Insert overwrite table retail_ods.orders partition (order_month)
+select order_id, order_date, order_customer_id,order_status,
+substr(order_date, 1, 7) order_month from retail_stage.orders_stage;
+You can find more details at https://cwiki.apache.org/confluence/display/Hive/DynamicPartitions
+
+Nikhil Bhide
+53055 silver badges1919 bronze badges
+can we do it without using a staging table?.. like directly load data from a file to table with dynamic partitioning. 
+
+– Naman Bhargava Dec 30 '16 at 14:35
+No you cant, a simple reason to it is ,the schema information. Hive will not have any schema info from the data stored in
+the file. Staging table unload gives the schema info, which in turn gives hive info about the column which should be used 
+to divide data into partitions.

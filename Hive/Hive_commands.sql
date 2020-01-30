@@ -16,7 +16,7 @@ CREATE DATABASE training;
 USE training;
 ----------------------------------------------------------------------------------------------------------
 CREATE TABLE employee(empid int,name string,salary int,designation string,department string) 
-ROW FORMAT DELIMITED 
+ROW FORMAT serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' WITH SERDEPROPERTIES ("separatorChar" = ",")
 FIELDS TERMINATED BY ',';
 ----------------------------------------------------------------------------------------------------------
 DESCRIBE  employee;

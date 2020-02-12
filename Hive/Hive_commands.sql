@@ -66,6 +66,12 @@ PARTITIONED BY(department STRING)
 ROW FORMAT DELIMITED 
 FIELDS TERMINATED BY ',';
 
+CREATE TABLE emp_part (empid int,name string,salary int,designation string)
+PARTITIONED BY (department STRING)
+ROW FORMAT serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde'  WITH SERDEPROPERTIES ("separatorChar" = ",")
+STORED AS TEXTFILE;
+
+
 # /root/training/data/emp_engineering.data
 1201,Gopal,45000,Technical manager
 1202,Manisha,45000,Senior Developer
